@@ -1,8 +1,8 @@
-
+const CircularJSON = require('circular-json');
 const Redis = require('ioredis');
 const redis_user = new Redis(); // Connect to Redis server running on localhost:6379
 const redis_user_route_response = new Redis();
-
+const route_response = new Redis();
 
 let user_key:string="users"//default
 
@@ -41,15 +41,38 @@ export const get_users=async function(){
 
 export const add_user_route_resp=async(user_id:string,response:any)=>{
     // console.log(response)
-    
-    await redis_user_route_response.set(user_id,response);
+
+    const serializedObject = CircularJSON.stringify(response);
+   
+    await redis_user_route_response.set(user_id,serializedObject);
     console.log("redis_user_route_response added")
     return true;
  }
-export const get_user_route_resp=async(user_id:string)=>{
-    return await redis_user_route_response.get(user_id)
+
+ export const add_route_resp=async(user_id:string,response:any)=>{
+    // console.log(response)
+    
+
+    await route_response.hset(user_id,{data:response});
+    console.log("redis_user_route_response added")
+    return true;
+ }
+
+ export const get_route_resp=async(user_id:string)=>{
+    return await route_response.hget(user_id,"data")
      
  }
+
+export const get_user_route_resp=async(user_id:string)=>{
+    
+    const resp= await redis_user_route_response.get(user_id);
+   
+    const data=JSON.parse(resp)
+    console.log(data)
+    return data;
+     
+ }
+
 export const delete_user_route_resp=async(user_id:string)=>{
     await redis_user_route_response.del(user_id)
     return true;

@@ -5,7 +5,7 @@
 import { get,Request,ResponseObject,Response,RestBindings} from '@loopback/rest';
 import { inject } from '@loopback/context';
 import { eventNames } from 'process';
-import {setup_key,add_users,remove_users,add_user_route_resp, get_users, get_user_route_resp} from "../redis/redis.js"
+import {setup_key,add_users,remove_users,add_user_route_resp, get_users, get_user_route_resp, add_route_resp, get_route_resp} from "../redis/redis.js"
 
 const Redis = require('ioredis');
 const redis_user = new Redis(); // Connect to Redis server running on localhost:6379
@@ -88,7 +88,10 @@ export class EventsController {
     response.setHeader('Connection', 'keep-alive');
     
     const user="user"+i++
-    await add_users(user)
+    await add_users(user);
+    
+    // await add_route_resp(user,response)
+
     await add_user_route_resp(user,response)
  
    
@@ -178,7 +181,9 @@ export class EventsController {
       @inject(RestBindings.Http.RESPONSE) response: Response
     ){
      const user_id:any=request.query.user
+      // const x=await get_route_resp(user_id)
       const x=await get_user_route_resp(user_id)
+
       x.write("ok")
       console.log(x)
 
