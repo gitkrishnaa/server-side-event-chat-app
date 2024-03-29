@@ -2,60 +2,106 @@
 
 // import {inject} from '@loopback/core';
 
-import { get ,ResponseObject,Response,RestBindings} from '@loopback/rest';
+import { get,Request,ResponseObject,Response,RestBindings} from '@loopback/rest';
 import { inject } from '@loopback/context';
 import { eventNames } from 'process';
 
-let user:any=[]
+let users_obj:any={}
 let should_send:boolean=false
 let i=0;
 let response1:any=undefined
+let messages_count=0;
 export class EventsController {
   constructor() {
     this.myVariable = ()=>{
-    console.log(null,"null")
-
+      console.log(null,"null")
     }; 
   }
   myVariable: any;
 
   @get('/events')
-  async getEvents(@inject(RestBindings.Http.RESPONSE) response: Response) {
+  async getEvents(
+    @inject(RestBindings.Http.REQUEST) request: Request,
+    @inject(RestBindings.Http.RESPONSE) response: Response) {
+  
+    console.log("/event route")
     // Set headers
-    console.log("events")
-    // console.log(response)
     response.setHeader('Content-Type', 'text/event-stream');
     response.setHeader('Cache-Control', 'no-cache');
     response.setHeader('Connection', 'keep-alive');
-    // Send the response
-    // response.send('Hello from LoopBack!');
-   console.log(should_send)
-   response.write(`initialize`);
-   response1=response
-   user.push()
-    // const intervalId = setInterval(() => {
-    //   // response.write(`no data: Total users:${i++} \n\n`);
-    //   console.log(should_send);
-      
-    // }, 2000); // Send updates every second
+    
+    console.log(should_send);
+    const users=`user${i++}`
+    response.write(`initialize ${users}`);
+    response1=response
+    users_obj[`${users}`]=response
 
+    for (const key in users_obj) {
+      console.log(key)
+    }
+
+    response.on('close', () => {
+      console.log(users_obj);
+      for (const key in users_obj) {
+        console.log(key)
+      }
+      Object.keys(users_obj).forEach((userId) => {
+        if (users_obj[userId] === response) {
+          delete users_obj[userId];
+          console.log(`User ${userId} disconnected`);
+        }
+      });
+      for (const key in users_obj) {
+        console.log(key)
+      }
+      // console.log(users_obj);
+      console.log('Client disconnected');
+
+      // Remove the client from the list
+    });
     
-    
-    // Return the response
-   
-      // response.end();
+ 
  
     return response;
   }
 
+
+
   @get('/abc')
-abcCall(@inject(RestBindings.Http.RESPONSE) response: Response):string{
-  should_send=true;
-  response1.write("adcs \n\n")
-  return "hello dacsfihjsfascsdvd SCdsaafgbfgdvfscda"
+  abcCall(@inject(RestBindings.Http.RESPONSE) response: Response):string{
+    should_send=true;
+    // response1.write(i+"messgaes \n\n")
+    messages_count++
+    for (const key in users_obj) {
+      const response_obj=  users_obj[key]
+      // console.log(users_obj[key])
+      console.log(key)
+      response_obj.write(`messgaes ${messages_count} \n\n`)
+    }
+
+
+    return "message sent"
+  }
+
+  @get('/close')
+  closeEvent(
+    @inject(RestBindings.Http.REQUEST) request: Request,
+    @inject(RestBindings.Http.RESPONSE) response: Response
+  ):any {
+    const x=request.params
+    const user_req=request.query.userid;
+
+
+    console.log(request.query,"params")
+    const user_resp_obj=users_obj[`user${user_req}`]
+    if(user_resp_obj!=undefined){
+      user_resp_obj.close
+    }
+    response.send("ok")
+
+  }
+
 }
+// console.log("hellokjbnj")
 
-
-
-}
-console.log("hellokjbnj")
+ 
