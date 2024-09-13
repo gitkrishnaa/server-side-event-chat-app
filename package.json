@@ -52,7 +52,7 @@
     "@loopback/boot": "^7.0.0",
     "@loopback/core": "^6.0.0",
     "@loopback/repository": "^7.0.0",
-    "@loopback/rest": "^14.0.0",
+    "@loopback/rest": "^14.0.6",
     "@loopback/rest-explorer": "^7.0.0",
     "@loopback/service-proxy": "^7.0.0",
     "circular-json": "^0.5.9",
